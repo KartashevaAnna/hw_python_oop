@@ -80,8 +80,8 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    CALORIES_RATIO_1: int = 18
-    CALORIES_RATIO_2: int = 20
+    CALORIES_HEIGHT_FACTOR: int = 18
+    CALORIES_AGE_FACTOR: int = 20
     M_IN_KM: int = 1000
 
     def __init__(self, action: int, duration: float, weight: float) -> None:
@@ -95,23 +95,30 @@ class Running(Training):
         return mean_speed
 
     def get_spent_calories(self) -> float:
-        """Получить количество затраченных калорий."""
+        """
+        Получить количество затраченных калорий.
+        Здесь и ниже я основываюсь вот на этой статье:
+        https://betterme.world/articles/calories-burned-calculator/
+        В реальной жизни я бы спросила при постановке задачи,
+        за что отвечают эти коэффициенты,
+        потому что я могла разгадать неверно.
+        """
 
-        spent_calories = ((self.CALORIES_RATIO_1
-                           * self.get_mean_speed()
-                           - self.CALORIES_RATIO_2)
+        basal_metabolic_rate = (self.CALORIES_HEIGHT_FACTOR
+                                * self.get_mean_speed()
+                                - self.CALORIES_AGE_FACTOR)
+        minutes = self.get_duration_in_minutes()
+        spent_calories = (basal_metabolic_rate
                           * self.weight
-                          / self.M_IN_KM
-                          * self.get_duration_in_minutes()
-                          )
+                          / self.M_IN_KM * minutes)
         return spent_calories
 
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
 
-    CALORIES_RATIO_1: float = 0.035
-    CALORIES_RATIO_2: float = 0.029
+    ADJUSTED_FOR_MEN: float = 0.035
+    SPORTSWALKING_EXERCISE_MODIFIER: float = 0.029
 
     def __init__(self,
                  action: int,
@@ -125,19 +132,22 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        first_part = self.CALORIES_RATIO_1 * self.weight
-        second_part = self.get_mean_speed()**2 // self.height
-        third_part = self.CALORIES_RATIO_2 * self.weight
-        last_part = self.get_duration_in_minutes()
-        spent_calories = (first_part + second_part * third_part) * last_part
+        adjusted_weight = self.ADJUSTED_FOR_MEN * self.weight
+        speed_square = self.get_mean_speed()**2
+        time = self.get_duration_in_minutes()
+        spent_calories = (
+                (adjusted_weight + speed_square
+                 // self.height
+                 * self.SPORTSWALKING_EXERCISE_MODIFIER
+                 * self.weight) * time)
         return spent_calories
 
 
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP: float = 1.38
-    CALORIES_RATIO_1: float = 1.1
-    CALORIES_RATIO_2: int = 2
+    EXERCISE_INTENSITY: float = 1.1
+    SWIMMING_EXERCISE_MODIFIER: int = 2
 
     def __init__(
             self,
@@ -162,8 +172,8 @@ class Swimming(Training):
         """Получить количество затраченных калорий."""
 
         mean_speed = Swimming.get_mean_speed(self)
-        spent_calories = ((mean_speed + self.CALORIES_RATIO_1)
-                          * self.CALORIES_RATIO_2 * self.weight)
+        spent_calories = ((mean_speed + self.EXERCISE_INTENSITY)
+                          * self.SWIMMING_EXERCISE_MODIFIER * self.weight)
         return spent_calories
 
 

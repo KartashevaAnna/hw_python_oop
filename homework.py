@@ -135,11 +135,10 @@ class SportsWalking(Training):
         adjusted_weight = self.ADJUSTED_FOR_MEN * self.weight
         speed_square = self.get_mean_speed()**2
         time = self.get_duration_in_minutes()
-        spent_calories = (
-                (adjusted_weight + speed_square
-                 // self.height
-                 * self.SPORTSWALKING_EXERCISE_MODIFIER
-                 * self.weight) * time)
+        spent_calories = ((adjusted_weight + speed_square
+                           // self.height
+                           * self.SPORTSWALKING_EXERCISE_MODIFIER
+                           * self.weight) * time)
         return spent_calories
 
 

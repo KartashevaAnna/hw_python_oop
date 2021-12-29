@@ -66,31 +66,23 @@ class Training:
             duration=self.duration,
             distance=self.get_distance(),
             speed=self.get_mean_speed(),
-            calories=self.get_spent_calories()
+            calories=self.get_spent_calories(),
         )
         return info
 
 
 class Running(Training):
     """Тренировка: бег."""
-    CALORIES_HEIGHT_FACTOR: int = 18
-    CALORIES_AGE_FACTOR: int = 20
+    CALORIES_HEIGHT_FACTOR: float = 18
+    CALORIES_AGE_FACTOR: float = 20
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
 
-        mean_speed = self.get_distance() / self.duration
-        return mean_speed
+        return self.get_distance() / self.duration
 
     def get_spent_calories(self) -> float:
-        """
-        Получить количество затраченных калорий.
-        Здесь и ниже я основываюсь вот на этой статье:
-        https://betterme.world/articles/calories-burned-calculator/
-        В реальной жизни я бы спросила при постановке задачи,
-        за что отвечают эти коэффициенты,
-        потому что я могла разгадать неверно.
-        """
+        """Получить количество затраченных калорий."""
 
         basal_metabolic_rate = (
             self.CALORIES_HEIGHT_FACTOR
@@ -117,7 +109,7 @@ class SportsWalking(Training):
             action: int,
             duration: float,
             weight: float,
-            height: float
+            height: float,
     ) -> None:
         super().__init__(action, duration, weight)
         self.height = height
@@ -139,7 +131,7 @@ class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP: float = 1.38
     EXERCISE_INTENSITY: float = 1.1
-    SWIMMING_EXERCISE_MODIFIER: int = 2
+    SWIMMING_EXERCISE_MODIFIER: float = 2
 
     def __init__(
             self,
@@ -147,7 +139,7 @@ class Swimming(Training):
             duration: float,
             weight: float,
             length_pool: float,
-            count_pool: float
+            count_pool: float,
     ) -> None:
         super().__init__(action, duration, weight)
         self.length_pool = length_pool
@@ -156,18 +148,16 @@ class Swimming(Training):
     def get_mean_speed(self) -> float:
         """Вычислить среднюю скорость."""
 
-        mean_speed = (
+        return (
             self.length_pool * self.count_pool
             / self.M_IN_KM / self.duration
         )
-        return mean_speed
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
 
-        mean_speed = Swimming.get_mean_speed(self)
         spent_calories = (
-            (mean_speed + self.EXERCISE_INTENSITY)
+            (Swimming.get_mean_speed(self) + self.EXERCISE_INTENSITY)
             * self.SWIMMING_EXERCISE_MODIFIER * self.weight
         )
         return spent_calories
@@ -176,16 +166,15 @@ class Swimming(Training):
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
 
-    dictionary_to_read = {
+    training_cypher = {
         'SWM': Swimming,
         'RUN': Running,
-        'WLK': SportsWalking
+        'WLK': SportsWalking,
     }
-    if workout_type not in dictionary_to_read:
-        raise KeyError
-    else:
-        my_instance = dictionary_to_read[workout_type](*data)
-        return my_instance
+
+    if workout_type not in training_cypher:
+        raise ValueError(f'This key is not found: {workout_type}')
+    return training_cypher[workout_type](*data)
 
 
 def main(training: Training) -> None:
